@@ -27,21 +27,25 @@
     font-family: 'DM Mono', monospace;
     background: var(--bg);
     color: var(--text);
-    min-height: 100dvh;
+    height: 100dvh;
     display: flex;
     flex-direction: column;
     overflow: hidden;
+    position: fixed;
+    width: 100%;
   }
 
   /* SCREENS */
-  .screen { display: none; flex-direction: column; flex: 1; overflow: hidden; }
+  .screen { display: none; flex-direction: column; height: 100%; overflow: hidden; }
   .screen.active { display: flex; }
 
   .scroll-area {
     flex: 1;
-    overflow-y: auto;
+    overflow-y: scroll;
+    overflow-x: hidden;
     padding: 16px 16px calc(var(--tab-h) + 24px);
     -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
   }
   .scroll-area::-webkit-scrollbar { display: none; }
 
@@ -634,11 +638,6 @@
         <input type="number" id="inp-exits" min="0" placeholder="0" oninput="calcDay()">
       </div>
 
-      <div class="field-full field">
-        <label>Notatka</label>
-        <input type="text" id="inp-note" placeholder="opcjonalnie...">
-      </div>
-
       <div class="computed-row">
         <label>Czas pracy</label>
         <div class="val" id="calc-hours">—</div>
@@ -726,9 +725,6 @@
           <span>⬇️</span> Importuj z JSON
         </button>
         <input type="file" id="import-file" accept=".json" style="display:none" onchange="importData(event)">
-        <button class="action-btn danger" onclick="clearAll()">
-          <span>🗑</span> Usuń wszystkie dane
-        </button>
       </div>
     </div>
 
@@ -977,7 +973,6 @@ function renderDayPanel(d) {
   document.getElementById('inp-from').value = entry ? entry.from : '';
   document.getElementById('inp-to').value = entry ? entry.to : '';
   document.getElementById('inp-exits').value = entry ? (entry.exits || '') : '';
-  document.getElementById('inp-note').value = entry ? (entry.note || '') : '';
 
   calcDay();
 
@@ -1009,13 +1004,12 @@ function saveEntry() {
   const from = document.getElementById('inp-from').value;
   const to = document.getElementById('inp-to').value;
   const exits = parseInt(document.getElementById('inp-exits').value) || 0;
-  const note = document.getElementById('inp-note').value.trim();
 
   if (!from || !to) { showToast('Podaj godziny!'); return; }
 
   const key = entryKey(currentYear, currentMonth, selectedDay);
   const data = getData();
-  data[key] = { from, to, exits, note };
+  data[key] = { from, to, exits };
   setData(data);
 
   showToast('Zapisano ✓');
@@ -1153,7 +1147,7 @@ function renderHistory() {
     return `<div class="entry-item" onclick="switchTab('calendar'); setTimeout(()=>selectDay(${d}),50)">
       <div>
         <div class="entry-date">${d} ${MONTHS_PL[currentMonth].slice(0,3)} <span style="font-weight:400;color:var(--muted);font-size:12px">${DAYS_LONG[dow]}</span></div>
-        <div class="entry-meta">${entry.from} – ${entry.to}${entry.exits ? ` · ${entry.exits} wyj.` : ''}${entry.note ? ` · ${entry.note}` : ''}</div>
+        <div class="entry-meta">${entry.from} – ${entry.to}${entry.exits ? ` · ${entry.exits} wyj.` : ''}</div>
       </div>
       <div>
         <div class="entry-hours">${fmtMinutes(min)}</div>
@@ -1232,4 +1226,3 @@ init();
 </script>
 </body>
 </html>
-
